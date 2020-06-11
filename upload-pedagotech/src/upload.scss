@@ -1,0 +1,70 @@
+#upload {
+    width:100%;
+    margin:2em;
+    
+    &-container {
+        width:100%;
+        display:flex;
+    }
+   
+    &-containerTitle {
+        width:50%;
+        display: flex;
+        justify-content: center;
+    }
+    &-containerMedia {
+        width:50%;
+        display: flex;
+        justify-content: center;
+
+    }
+    &-button {
+        width: 40%;
+        border: none;
+        margin:2em 2em 2em 0em;
+        padding: 1em;
+        text-align: center;
+        text-transform: uppercase;
+        background-color: #EFF3F3;
+    }
+    &-button:hover, &-button:focus {
+        cursor: pointer;
+        background-color:#e7e9e9; 
+        outline:none;
+
+    }
+    &-containerDoc {
+        width:100%;
+        display:flex;
+    }
+        &-containerGoogleSheetTitle {
+            width:50%;
+            display:flex;
+            flex-wrap:wrap;
+            justify-content: center;
+    }
+
+    &-containerGoogleSheetMedia {
+        width:50%;
+        display:flex;
+        flex-wrap:wrap;
+        justify-content: center;
+
+    }
+
+    &-img{
+        width: 20%;
+        max-width: 20%;
+    }
+      &-img:hover{
+          opacity:0.5;
+    }
+
+    &-subtitle {
+        text-transform: uppercase;
+        color:#d6d5d1;
+        font-size:12px;
+
+    }
+   
+}

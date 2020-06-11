@@ -1,0 +1,16 @@
+export const typeDatas = [
+    { value: 'Aucun' },
+    { value: 'Partition' },
+    { value: 'Tablature' },
+    { value: 'Théorie' },
+    { value: 'Audio' },
+    { value: 'Vidéo' },
+    { value: 'Structure' },
+    { value: 'Paroles' },
+    { value: 'Lien Audio' },
+    { value: 'Lien Vidéo' },
+    { value: 'Grille' },
+    { value: 'Divers' },
+    { value: 'Texte' },
+    { value: 'Lien web' },
+]
