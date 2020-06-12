@@ -81,6 +81,7 @@ const Upload = () => {
             }, 2000);
             console.log('premiere requete api');
         });
+
     }
 
     //2nde call of spotify api
@@ -133,13 +134,8 @@ const Upload = () => {
     const styleFilter = (genreArtist) => {
         const styleDatasArray = styleDatas.map(styleData => styleData.value);
         let styles = [];
-
-
         const styleSpotify = genreArtist;
-
-
         styleSpotify.map(style => {
-
             if (styleDatasArray.includes(style)) {
                 styles = [...styles, style];
             }
@@ -151,27 +147,14 @@ const Upload = () => {
     }
 
     const uploadGoogleSheet = (arraySpotifyInfos) => {
-
-        const newArray = arrayTracks.splice(0, 1);
-        console.log("1", newArray);
-        newArray[0].splice(1, 3);
-        console.log("2", newArray);
-
-        const idExtra = newArray.map(newArray => newArray[0]);
-        console.log("3", idExtra);
-
         let dataFinal = [];
+        const newArray = arrayTracks.splice(0, 1);
+        newArray[0].splice(1, 3);
+        const idExtra = newArray.map(newArray => newArray[0]);
         arraySpotifyInfos.splice(2, 1);
-        console.log("4", arraySpotifyInfos);
-
         const finalArray = arraySpotifyInfos.map(item => Object.values(item).join(''));
-        console.log("5", finalArray);
         dataFinal.push(finalArray);
-        console.log("6", dataFinal);
-
         const lastDataFinal = finalArray.concat(idExtra);
-        console.log("7", lastDataFinal);
-
         let arrayGoogle = [];
         arrayGoogle.push(lastDataFinal);
         setTimeout(() => {
@@ -216,10 +199,6 @@ const Upload = () => {
     }
     const handleFileMedia = () => {
         uploadInformationsMedia();
-        setTimeout(() => {
-            uploadGoogleSheetMedia();
-        }, 6000);
-
     }
 
     const uploadInformationsMedia = () => {
@@ -228,7 +207,6 @@ const Upload = () => {
         //professorDatasExtranet();
     }
     const levelDatasExtranet = () => {
-        let level = [];
         let levelIdPedagotech = "";
         const arrayLevelExtranetId = arrayMedias.map(item => item[3]);
         const arrayLevelPedagotech = levelDatas.map(level => level.value);
@@ -236,30 +214,29 @@ const Upload = () => {
         arrayLevelExtranetId.map((levelid => {
             if (levelid >= -1 && levelid <= 0) {
                 levelid = arrayLevelPedagotech[0];
-                levelIdPedagotech = [levelid]
+                levelIdPedagotech = levelid
             } else if (levelid >= 1 && levelid <= 4) {
                 levelid = arrayLevelPedagotech[1];
-                levelIdPedagotech = [levelid];
+                levelIdPedagotech = levelid;
             } else if (levelid >= 6 && levelid <= 8) {
                 levelid = arrayLevelPedagotech[2];
-                levelIdPedagotech = [levelid];
+                levelIdPedagotech = levelid;
             } else if (levelid >= 12 && levelid <= 14) {
                 levelid = arrayLevelPedagotech[3];
-                levelIdPedagotech = [levelid];
+                levelIdPedagotech = levelid;
             } else if (levelid >= 15 && levelid <= 17) {
                 ;
                 levelid = arrayLevelPedagotech[4];
-                levelIdPedagotech = [levelid];
+                levelIdPedagotech = levelid;
             }
-            level.push(levelIdPedagotech);
-            return level;
+            return levelIdPedagotech;
         }));
 
-        typeDatasExtranet(level);
+        typeDatasExtranet(levelIdPedagotech);
     }
 
-    const typeDatasExtranet = (level) => {
-        let type = [];
+    const typeDatasExtranet = (levelIdPedagotech) => {
+        let arrayInfos = [];
         let typeIdPedagotech = "";
         const arrayTypeExtranetId = arrayMedias.map(item => item[5]);
         const arrayTypePedagotech = typeDatas.map(type => type.value);
@@ -267,68 +244,100 @@ const Upload = () => {
         arrayTypeExtranetId.map((typeid => {
             if (typeid >= -1 && typeid <= 0) {
                 typeid = arrayTypePedagotech[0];
-                typeIdPedagotech = [typeid];
+                typeIdPedagotech = typeid;
             } else if (typeid === 1) {
                 typeid = arrayTypePedagotech[1];
-                typeIdPedagotech = [typeid];
+                typeIdPedagotech = typeid;
             } else if (typeid === 2) {
                 typeid = arrayTypePedagotech[2];
-                typeIdPedagotech = [typeid];
+                typeIdPedagotech = typeid;
             } else if (typeid === 3) {
                 typeid = arrayTypePedagotech[3];
-                typeIdPedagotech = [typeid];
+                typeIdPedagotech = typeid;
             } else if (typeid === 4) {
                 typeid = arrayTypePedagotech[4];
-                typeIdPedagotech = [typeid];
+                typeIdPedagotech = typeid;
             } else if (typeid === 5) {
                 typeid = arrayTypePedagotech[5];
-                typeIdPedagotech = [typeid];
+                typeIdPedagotech = typeid;
             } else if (typeid === 6) {
                 typeid = arrayTypePedagotech[6];
-                typeIdPedagotech = [typeid];
+                typeIdPedagotech = typeid;
             } else if (typeid === 7) {
                 typeid = arrayTypePedagotech[7];
-                typeIdPedagotech = [typeid];
+                typeIdPedagotech = typeid;
             } else if (typeid === 8) {
                 typeid = arrayTypePedagotech[8];
-                typeIdPedagotech = [typeid];
+                typeIdPedagotech = typeid;
             } else if (typeid === 9) {
                 typeid = arrayTypePedagotech[9];
-                typeIdPedagotech = [typeid];
+                typeIdPedagotech = typeid;
             } else if (typeid === 10) {
                 typeid = arrayTypePedagotech[10];
-                typeIdPedagotech = [typeid];
+                typeIdPedagotech = typeid;
             } else if (typeid === 11) {
                 typeid = arrayTypePedagotech[11];
-                typeIdPedagotech = [typeid];
+                typeIdPedagotech = typeid;
             } else if (typeid === 12) {
                 typeid = arrayTypePedagotech[12];
-                typeIdPedagotech = [typeid];
+                typeIdPedagotech = typeid;
             } else if (typeid === 13) {
                 typeid = arrayTypePedagotech[13];
-                typeIdPedagotech = [typeid];
+                typeIdPedagotech = typeid;
             }
 
-            type.push(typeIdPedagotech);
-            return type;
+            const arrayInfosPedagotech = [
+                typeIdPedagotech,
+                levelIdPedagotech
+            ]
+            arrayInfos.push(arrayInfosPedagotech);
 
+           
+            return arrayInfos;
+            
         }));
-        const arraylevel = level.map(level => level);
-        const arraytype = type.map(type => type);
-        console.log("mon tableau", arraytype);
-        console.log("mon tableau level", arraylevel);
-
-        let arrayconcat = arraytype.concat(arraylevel);
-        console.log("mon tableau concat", arrayconcat);
-        uploadGoogleSheetMedia();
-
+        uploadGoogleSheetMedia(arrayInfos,levelIdPedagotech);
     }
 
 
-    const uploadGoogleSheetMedia = () => {
-        // const arrayConcat = type.concat(level);
-        // console.log("mon tableau final est",arrayMedias);
-    }
+    const uploadGoogleSheetMedia = (arrayInfos) => {
+        let arrayLastFinal = [];
+        let arrayMediaFinal = [];
+        arrayMediaFinal.push(arrayMedias);
+        let arrayInfosFinal = [];
+        arrayInfosFinal.push(arrayInfos);
+        arrayMediaFinal[0].map(media => Object.values(media));
+        arrayInfosFinal[0].map(info => Object.values(info));
+        // count the lenght of the array
+        const numbArray = arrayMediaFinal[0].length - 1;
+        console.log(numbArray);
+       
+        for(var i = 0; i <= numbArray; i++) {
+                arrayMediaFinal[0][i].splice(5,1);
+                arrayMediaFinal[0][i].splice(3, 1);
+                //@TODO professeurid :
+                //arrayMediaFinal[0][i].splice(6, 1);
+                const finalArray = arrayMediaFinal[0][i].concat(arrayInfosFinal[0][i]);
+                arrayLastFinal.push(finalArray);
+        }
+            console.log(arrayLastFinal);
+            setTimeout(() => {
+                console.log("mon tableau a envoyé dans googlesheet", arrayLastFinal);
+                handleSubmitGoogleSheetMedia(arrayLastFinal);
+            }, 6000);
+}
+
+const handleSubmitGoogleSheetMedia = (arrayLastFinal) => {
+    Axios.post('http://localhost:5000/media', {
+        data: arrayLastFinal
+    })
+        .then(function (response) {
+            console.log('yes le serveur receptionne les medias', response);
+        })
+        .catch(function () {
+            console.log('et nope');
+        });
+}
 
     return (
         <div id="upload">

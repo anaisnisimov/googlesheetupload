@@ -119,7 +119,7 @@ app.get("/mysqlReadTitleTable", (req, res) => {
         database: 'testextranet',
         host: "localhost",
         user: "root",
-        password: "XXXXXXX"
+        password: "XXXXXX"
     });
 
     mySqlClient.connect(function (err) {
@@ -178,7 +178,7 @@ app.get("/mysqlReadMediaTable", (req, res) => {
         database: 'testextranet',
         host: "localhost",
         user: "root",
-        password: "XXXXXXX"
+        password: "XXXXXX"
     });
 
     mySqlClient.connect(function (err) {
