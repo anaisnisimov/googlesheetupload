@@ -14,7 +14,9 @@ const Upload = () => {
     const [state, dispatch] = useReducer(reducer, initialState);
     const [arrayTracks, setarrayTracks] = useState([]);
     const [arrayMedias, setarrayMedias] = useState([]);
+    const [arrayTitle,setarrayTitle] = useState([]);
 
+    let arrayGoogle = [];
 
     const handleFileMysql = () => {
         Axios({
@@ -81,7 +83,6 @@ const Upload = () => {
             }, 2000);
             console.log('premiere requete api');
         });
-
     }
 
     //2nde call of spotify api
@@ -114,13 +115,9 @@ const Upload = () => {
                 { spotifyCoverLink },
                 { spotifyTrackId },
             ];
-
-            setTimeout(() => {
                 uploadGoogleSheet(arraySpotifyInfos);
-            }, 1000);
 
         }
-
         setTimeout(() => {
             console.log('execution fetchdataArtist');
             FetchDataArtist();
@@ -155,18 +152,22 @@ const Upload = () => {
         const finalArray = arraySpotifyInfos.map(item => Object.values(item).join(''));
         dataFinal.push(finalArray);
         const lastDataFinal = finalArray.concat(idExtra);
-        let arrayGoogle = [];
         arrayGoogle.push(lastDataFinal);
-        setTimeout(() => {
-            console.log("mon tableau a envoyé dans googlesheet", arrayGoogle);
-            handleSubmitGoogleSheet(arrayGoogle);
-        }, 10000);
-
+        handleGoogleSheetTitle(arrayGoogle);
     }
-
-    const handleSubmitGoogleSheet = (arrayGoogle) => {
+   
+    const handleGoogleSheetTitle = (arrayGoogle) => {
+        let arrayTitleFinal = [];
+        arrayTitleFinal.push(arrayGoogle);
+        const testarraypop = arrayTitleFinal.pop(arrayTitleFinal);
+        arrayTitle.push(testarraypop);
+        setarrayTitle(arrayTitle);
+    }
+    const handleSubmitGoogleSheetTitle = () => {
+        const arrayTitleFinal = arrayTitle[0].map(title =>title);
+        console.log("mon tableau à mettre à jour dans googlesheet", arrayTitleFinal);
         Axios.post('http://localhost:5000/', {
-            data: arrayGoogle
+            data: arrayTitleFinal
         })
             .then(function (response) {
                 console.log('yes le serveur receptionne', response);
@@ -177,10 +178,13 @@ const Upload = () => {
     }
 
     const handleFileTitle = () => {
-        handleFileMysql();
         firtCall();
+        setTimeout(() => {
+            console.log(arrayTitle);
+            handleSubmitGoogleSheetTitle();
+        }, 7000);
     }
-
+    // console.log("mon arrayTitle met à jour le DOM", arrayTitle);
     //---------------------------------------------------------MEDIA PART-----------------------------------------------------
     const handleFileMysqlMedia = () => {
         Axios({
@@ -225,7 +229,6 @@ const Upload = () => {
                 levelid = arrayLevelPedagotech[3];
                 levelIdPedagotech = levelid;
             } else if (levelid >= 15 && levelid <= 17) {
-                ;
                 levelid = arrayLevelPedagotech[4];
                 levelIdPedagotech = levelid;
             }
@@ -308,23 +311,22 @@ const Upload = () => {
         arrayInfosFinal.push(arrayInfos);
         arrayMediaFinal[0].map(media => Object.values(media));
         arrayInfosFinal[0].map(info => Object.values(info));
-        // count the lenght of the array
-        const numbArray = arrayMediaFinal[0].length - 1;
-        console.log(numbArray);
+            // count the lenght of the array
+            const numbArray = arrayMediaFinal[0].length - 1;
        
-        for(var i = 0; i <= numbArray; i++) {
-                arrayMediaFinal[0][i].splice(5,1);
-                arrayMediaFinal[0][i].splice(3, 1);
-                //@TODO professeurid :
-                //arrayMediaFinal[0][i].splice(6, 1);
-                const finalArray = arrayMediaFinal[0][i].concat(arrayInfosFinal[0][i]);
-                arrayLastFinal.push(finalArray);
-        }
-            console.log(arrayLastFinal);
-            setTimeout(() => {
-                console.log("mon tableau a envoyé dans googlesheet", arrayLastFinal);
-                handleSubmitGoogleSheetMedia(arrayLastFinal);
-            }, 6000);
+            for(var i = 0; i <= numbArray; i++) {
+                    arrayMediaFinal[0][i].splice(5,1);
+                    arrayMediaFinal[0][i].splice(3, 1);
+                    //@TODO professeurid :
+                    //arrayMediaFinal[0][i].splice(6, 1);
+                    const finalArray = arrayMediaFinal[0][i].concat(arrayInfosFinal[0][i]);
+                    arrayLastFinal.push(finalArray);
+            }
+        console.log(arrayLastFinal);
+        setTimeout(() => {
+            console.log("mon tableau a envoyé dans googlesheet", arrayLastFinal);
+            handleSubmitGoogleSheetMedia(arrayLastFinal);
+        }, 6000);
 }
 
 const handleSubmitGoogleSheetMedia = (arrayLastFinal) => {
@@ -343,6 +345,7 @@ const handleSubmitGoogleSheetMedia = (arrayLastFinal) => {
         <div id="upload">
             <div id="upload-container">
                 <div id="upload-containerTitle">
+                    <button id="upload-button" onClick={handleFileMysql}>Appel MYSQL</button>
                     <button id="upload-button" onClick={handleFileTitle}>Mettre à jour les titres</button>
                 </div>
                 <div id="upload-containerMedia">
