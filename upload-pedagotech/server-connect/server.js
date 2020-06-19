@@ -119,7 +119,7 @@ app.get("/mysqlReadTitleTable", (req, res) => {
         database: 'testextranet',
         host: "localhost",
         user: "root",
-        password: "XXXXXX"
+        password: "XXXX"
     });
 
     mySqlClient.connect(function (err) {

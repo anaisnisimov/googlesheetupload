@@ -4,19 +4,25 @@ import { reducer, initialState } from './appReducer';
 import { getToken } from './appMiddleware';
 import { styleDatas } from './styleDatas';
 import { levelDatas } from './levelDatas';
+import {Loader} from 'semantic-ui-react';
 import { typeDatas } from './typeDatas';
-
 import './upload.scss';
 import sheetColor from './assets/sheetColor.png';
 
 
 const Upload = () => {
     const [state, dispatch] = useReducer(reducer, initialState);
-    const [arrayTracks, setarrayTracks] = useState([]);
     const [arrayMedias, setarrayMedias] = useState([]);
     const [arrayTitle,setarrayTitle] = useState([]);
-
+    const [uploadDoc,setuploadDoc] = useState(false);
+    const [loading, setLoading] = useState(false);
+    let arrayMysql = [];
+    let arrayMysqlMedia = [];
     let arrayGoogle = [];
+    let arrayMediaComplete = [];
+    let arrayLastFinal = [];
+    let arrayMediaFinal = [];
+    let arrayInfosFinal = [];
 
     const handleFileMysql = () => {
         Axios({
@@ -27,20 +33,19 @@ const Upload = () => {
             }
         }).then(res => {
             console.log(res.data.message);
-
-            setarrayTracks(res.data.data);
             console.log("mon tableau mysql", res.data.data);
-
+            arrayMysql = res.data.data;
+            console.log(arrayMysql);
+            firtCall(arrayMysql);
+          
         }).catch(error => {
             console.log('error reception mysql', error);
         });
     }
 
 
-
-
     //First call spotify api (tracks)
-    const getApiData = async (token, id) => {
+    const getApiData = async (token, id, arrayMysql) => {
         const res = await Axios.get(`https://api.spotify.com/v1/tracks/${id}`, {
 
             headers: {
@@ -59,20 +64,20 @@ const Upload = () => {
         const spotifyTrackId = res.data.id;
 
         //call second api call 
-        secondCall(title, artistName, artistId, spotifyCoverLink, year, spotifyLink, spotifyTrackId, token);
+        secondCall(title, artistName, artistId, spotifyCoverLink, year, spotifyLink, spotifyTrackId, token, arrayMysql);
         return res;
     }
 
     // first callback
-    const firtCall = () => {
-        console.log("mon tableau est", arrayTracks);
-        const arrayIdSpotify = arrayTracks.map(item => Object.values(item[10]).join(''));
+    const firtCall = (arrayMysql) => {
+        console.log("mon tableau est", arrayMysql);
+        const arrayIdSpotify = arrayMysql.map(item => Object.values(item[10]).join(''));
         console.log('mon id spotify est', arrayIdSpotify);
 
         arrayIdSpotify.forEach((id) => {
             const FetchData = async () => {
                 const token = await getToken();
-                const data = await getApiData(token, id);
+                const data = await getApiData(token, id, arrayMysql);
                 dispatch({
                     type: 'FETCH_DATA',
                     payload: data,
@@ -99,8 +104,7 @@ const Upload = () => {
 
 
     //second call spotify api artist (to get the style)     
-
-    const secondCall = (title, artistName, artistId, spotifyCoverLink, year, spotifyLink, spotifyTrackId, token) => {
+    const secondCall = (title, artistName, artistId, spotifyCoverLink, year, spotifyLink, spotifyTrackId, token, arrayMysql) => {
         const FetchDataArtist = async () => {
             const genreArtist = await getApiArtist(token, artistId);
             const style = styleFilter(genreArtist);
@@ -115,7 +119,7 @@ const Upload = () => {
                 { spotifyCoverLink },
                 { spotifyTrackId },
             ];
-                uploadGoogleSheet(arraySpotifyInfos);
+            uploadGoogleSheet(arraySpotifyInfos, arrayMysql);
 
         }
         setTimeout(() => {
@@ -143,9 +147,9 @@ const Upload = () => {
 
     }
 
-    const uploadGoogleSheet = (arraySpotifyInfos) => {
+    const uploadGoogleSheet = (arraySpotifyInfos, arrayMysql) => {
         let dataFinal = [];
-        const newArray = arrayTracks.splice(0, 1);
+        const newArray = arrayMysql.splice(0, 1);
         newArray[0].splice(1, 3);
         const idExtra = newArray.map(newArray => newArray[0]);
         arraySpotifyInfos.splice(2, 1);
@@ -157,34 +161,37 @@ const Upload = () => {
     }
    
     const handleGoogleSheetTitle = (arrayGoogle) => {
-        let arrayTitleFinal = [];
-        arrayTitleFinal.push(arrayGoogle);
-        const testarraypop = arrayTitleFinal.pop(arrayTitleFinal);
-        arrayTitle.push(testarraypop);
+        let newArrayTitle = [];
+        newArrayTitle.push(arrayGoogle);
+        const newArrayPop = newArrayTitle.pop(newArrayTitle);
+        arrayTitle.push(newArrayPop);
         setarrayTitle(arrayTitle);
+        console.log(arrayTitle);
     }
+
     const handleSubmitGoogleSheetTitle = () => {
         const arrayTitleFinal = arrayTitle[0].map(title =>title);
+        setarrayTitle(arrayTitleFinal);
         console.log("mon tableau à mettre à jour dans googlesheet", arrayTitleFinal);
         Axios.post('http://localhost:5000/', {
             data: arrayTitleFinal
         })
             .then(function (response) {
                 console.log('yes le serveur receptionne', response);
+                handleFileMysqlMedia();
             })
             .catch(function () {
                 console.log('et nope');
             });
     }
 
-    const handleFileTitle = () => {
-        firtCall();
+    const handleUploadTitleAndMedia= () => {
+        setLoading(true);
+        handleFileMysql();
         setTimeout(() => {
-            console.log(arrayTitle);
             handleSubmitGoogleSheetTitle();
         }, 7000);
     }
-    // console.log("mon arrayTitle met à jour le DOM", arrayTitle);
     //---------------------------------------------------------MEDIA PART-----------------------------------------------------
     const handleFileMysqlMedia = () => {
         Axios({
@@ -195,24 +202,23 @@ const Upload = () => {
             }
         }).then(res => {
             console.log("mon tableau mysql media est", res.data.data);
-            setarrayMedias(res.data.data);
+            arrayMysqlMedia = res.data.data;
+            setarrayMedias(arrayMysqlMedia);
+            getInformationsMedia(arrayMysqlMedia);
 
         }).catch(error => {
             console.log('error reception mysql', error);
         });
     }
-    const handleFileMedia = () => {
-        uploadInformationsMedia();
-    }
-
-    const uploadInformationsMedia = () => {
-        levelDatasExtranet();
+    const getInformationsMedia = (arrayMysqlMedia) => {
+        levelDatasExtranet(arrayMysqlMedia);
         //@TODO à faire
         //professorDatasExtranet();
     }
-    const levelDatasExtranet = () => {
+    const levelDatasExtranet = (arrayMysqlMedia) => {
+
         let levelIdPedagotech = "";
-        const arrayLevelExtranetId = arrayMedias.map(item => item[3]);
+        const arrayLevelExtranetId = arrayMysqlMedia.map(item => item[3]);
         const arrayLevelPedagotech = levelDatas.map(level => level.value);
 
         arrayLevelExtranetId.map((levelid => {
@@ -235,13 +241,13 @@ const Upload = () => {
             return levelIdPedagotech;
         }));
 
-        typeDatasExtranet(levelIdPedagotech);
+        typeDatasExtranet(levelIdPedagotech, arrayMysqlMedia);
     }
 
-    const typeDatasExtranet = (levelIdPedagotech) => {
+    const typeDatasExtranet = (levelIdPedagotech, arrayMysqlMedia) => {
         let arrayInfos = [];
         let typeIdPedagotech = "";
-        const arrayTypeExtranetId = arrayMedias.map(item => item[5]);
+        const arrayTypeExtranetId = arrayMysqlMedia.map(item => item[5]);
         const arrayTypePedagotech = typeDatas.map(type => type.value);
 
         arrayTypeExtranetId.map((typeid => {
@@ -294,47 +300,67 @@ const Upload = () => {
                 levelIdPedagotech
             ]
             arrayInfos.push(arrayInfosPedagotech);
-
-           
-            return arrayInfos;
-            
+            return arrayInfos; 
         }));
-        uploadGoogleSheetMedia(arrayInfos,levelIdPedagotech);
+
+        arrayMediaFinal.push(arrayMysqlMedia);
+        uploadAllInfosMedia(arrayInfos, arrayMysqlMedia);
     }
-
-
-    const uploadGoogleSheetMedia = (arrayInfos) => {
-        let arrayLastFinal = [];
-        let arrayMediaFinal = [];
-        arrayMediaFinal.push(arrayMedias);
-        let arrayInfosFinal = [];
+    const uploadAllInfosMedia = (arrayInfos, arrayMediaFinal) => {
+       
+        console.log("test",arrayMediaFinal);
         arrayInfosFinal.push(arrayInfos);
-        arrayMediaFinal[0].map(media => Object.values(media));
+        arrayMediaFinal.map(media => Object.values(media));
         arrayInfosFinal[0].map(info => Object.values(info));
             // count the lenght of the array
-            const numbArray = arrayMediaFinal[0].length - 1;
+            const numbArray = arrayMediaFinal.length - 1;
        
             for(var i = 0; i <= numbArray; i++) {
-                    arrayMediaFinal[0][i].splice(5,1);
-                    arrayMediaFinal[0][i].splice(3, 1);
+                    arrayMediaFinal[i].splice(5,1);
+                    arrayMediaFinal[i].splice(3, 1);
                     //@TODO professeurid :
                     //arrayMediaFinal[0][i].splice(6, 1);
-                    const finalArray = arrayMediaFinal[0][i].concat(arrayInfosFinal[0][i]);
+                    const finalArray = arrayMediaFinal[i].concat(arrayInfosFinal[0][i]);
                     arrayLastFinal.push(finalArray);
             }
-        console.log(arrayLastFinal);
-        setTimeout(() => {
-            console.log("mon tableau a envoyé dans googlesheet", arrayLastFinal);
-            handleSubmitGoogleSheetMedia(arrayLastFinal);
-        }, 6000);
-}
+        console.log("mon tableau après traitement",arrayLastFinal);
+        setarrayMedias(arrayLastFinal);
+        getmediaDataComplete(arrayLastFinal);
+    }
+    const getmediaDataComplete = (arrayLastFinal) => {
 
-const handleSubmitGoogleSheetMedia = (arrayLastFinal) => {
+        const uploadInfosSpotifyToMedias = (id, arr) => {
+            arrayTitle[0].map(elem => {
+                if (elem[7] === id) {
+                    arrayMediaComplete.push(arr.concat(elem));;
+                }
+            });
+        }
+        arrayLastFinal.map(arr => {
+            uploadInfosSpotifyToMedias(arr[5], arr);
+        });
+        setTimeout(() => {
+            const numbArrayMedia = arrayMediaComplete.length - 1;
+            console.log(numbArrayMedia);
+            for (var i = 0; i <= numbArrayMedia; i++) {
+            //  arrayMediaComplete[i].splice(5, 1);
+                arrayMediaComplete[i].splice(6, 1);
+            // arrayMediaComplete[0][i].splice(15, 1);
+                console.log(arrayMediaComplete);
+            }
+           
+            console.log("mon tableau a envoyé dans googlesheet", arrayMediaComplete);
+            handleSubmitGoogleSheetMedia(arrayMediaComplete);
+        }, 2000);
+    }
+    const handleSubmitGoogleSheetMedia = (arrayMediaComplete) => {
     Axios.post('http://localhost:5000/media', {
-        data: arrayLastFinal
+        data: arrayMediaComplete
     })
         .then(function (response) {
             console.log('yes le serveur receptionne les medias', response);
+            setLoading(false);
+            setuploadDoc(true);
         })
         .catch(function () {
             console.log('et nope');
@@ -345,38 +371,47 @@ const handleSubmitGoogleSheetMedia = (arrayLastFinal) => {
         <div id="upload">
             <div id="upload-container">
                 <div id="upload-containerTitle">
-                    <button id="upload-button" onClick={handleFileMysql}>Appel MYSQL</button>
-                    <button id="upload-button" onClick={handleFileTitle}>Mettre à jour les titres</button>
-                </div>
-                <div id="upload-containerMedia">
-                    <button id="upload-button" onClick={handleFileMysqlMedia}>Appel MYSQL</button>
-                    <button id="upload-button" onClick={handleFileMedia}>Mettre à jour les médias</button>
+                    <button id="upload-button" onClick={handleUploadTitleAndMedia}>Mettre à jour les titres et les médias</button>
                 </div>
             </div>
 
-
+            {loading ?
+            <div id= "upload-containerLoader">
+                    <Loader active inline='centered' />
+            </div>
+                : null}
+                { uploadDoc ? 
             <div id="upload-containerDoc">
                 <div id="upload-containerGoogleSheetTitle">
-                    <h3 id="upload-subtitle">Votre document GoogleSheet a été mis à jour !</h3>
-                    <a href="https://docs.google.com/spreadsheets/d/1fDDccNM-8kFfWvUmKcViJEkOfyq3uqPGOlTq2azVclY" target="_blank" rel="noopener noreferrer">
-                        <img
-                            alt="logo"
-                            id="upload-img"
-                            src={sheetColor}
-                        />
-                    </a>
+                    <h3 id="upload-subtitle">Votre document GoogleSheet Titres a été mis à jour !
+                     <br /> Vous souhaitez consulter votre document ? cliquez sur ce lien : 
+                    </h3>
+                    <div id= "upload-containerLinkImg">
+                        <a href="https://docs.google.com/spreadsheets/d/1fDDccNM-8kFfWvUmKcViJEkOfyq3uqPGOlTq2azVclY" target="_blank" rel="noopener noreferrer">
+                            <img
+                                alt="logo"
+                                id="upload-img"
+                                src={sheetColor}
+                            />
+                        </a>
+                    </div>
                 </div>
                 <div id="upload-containerGoogleSheetMedia">
-                    <h3 id="upload-subtitle">Votre document GoogleSheet a été mis à jour !</h3>
-                    <a href="https://docs.google.com/spreadsheets/d/1Taa0FiDmjkYRzGLT7FndJ8tBgL7KsxK3ZD6Hv56XxPA" target="_blank" rel="noopener noreferrer">
-                        <img
-                            alt="logo"
-                            id="upload-img"
-                            src={sheetColor}
-                        />
-                    </a>
+                    <h3 id="upload-subtitle">Votre document GoogleSheet Médias a été mis à jour !
+                     <br /> Vous souhaitez consulter votre document ? cliquez sur ce lien : 
+                    </h3>
+                    <div id="upload-containerLinkImg">
+                        <a href="https://docs.google.com/spreadsheets/d/1Taa0FiDmjkYRzGLT7FndJ8tBgL7KsxK3ZD6Hv56XxPA" target="_blank" rel="noopener noreferrer">
+                            <img
+                                alt="logo"
+                                id="upload-img"
+                                src={sheetColor}
+                            />
+                        </a>
+                    </div>
                 </div>
             </div>
+                    : null}
         </div>
     );
 }
