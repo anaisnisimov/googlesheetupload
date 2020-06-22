@@ -12,7 +12,6 @@ import sheetColor from './assets/sheetColor.png';
 
 const Upload = () => {
     const [state, dispatch] = useReducer(reducer, initialState);
-    const [arrayMedias, setarrayMedias] = useState([]);
     const [arrayTitle,setarrayTitle] = useState([]);
     const [uploadDoc,setuploadDoc] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -203,7 +202,6 @@ const Upload = () => {
         }).then(res => {
             console.log("mon tableau mysql media est", res.data.data);
             arrayMysqlMedia = res.data.data;
-            setarrayMedias(arrayMysqlMedia);
             getInformationsMedia(arrayMysqlMedia);
 
         }).catch(error => {
@@ -324,7 +322,6 @@ const Upload = () => {
                     arrayLastFinal.push(finalArray);
             }
         console.log("mon tableau après traitement",arrayLastFinal);
-        setarrayMedias(arrayLastFinal);
         getmediaDataComplete(arrayLastFinal);
     }
     const getmediaDataComplete = (arrayLastFinal) => {
@@ -343,6 +340,9 @@ const Upload = () => {
             const numbArrayMedia = arrayMediaComplete.length - 1;
             console.log(numbArrayMedia);
             for (var i = 0; i <= numbArrayMedia; i++) {
+                if(arrayMediaComplete[i][3] === null){
+                    arrayMediaComplete[i][3] = "Aucune";
+                };
             //  arrayMediaComplete[i].splice(5, 1);
                 arrayMediaComplete[i].splice(6, 1);
             // arrayMediaComplete[0][i].splice(15, 1);
