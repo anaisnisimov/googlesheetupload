@@ -1,7 +1,6 @@
 import React from "react";
 import './App.scss';
 import Upload from './Upload';
-
 const App = () => {
 
   return (

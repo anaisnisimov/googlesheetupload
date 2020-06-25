@@ -9,13 +9,14 @@ import { typeDatas } from './typeDatas';
 import './upload.scss';
 import sheetColor from './assets/sheetColor.png';
 
-
 const Upload = () => {
     const [state, dispatch] = useReducer(reducer, initialState);
     const [arrayTitle,setarrayTitle] = useState([]);
     const [uploadDoc,setuploadDoc] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [searchId, setSearchId] = useState('');
     let arrayMysql = [];
+    let arrayIdSpotify = [];
     let arrayMysqlMedia = [];
     let arrayGoogle = [];
     let arrayMediaComplete = [];
@@ -23,14 +24,21 @@ const Upload = () => {
     let arrayMediaFinal = [];
     let arrayInfosFinal = [];
 
+    const handleChange = (e) => {
+        setSearchId(e.target.value);
+
+    };
+    
     const handleFileMysql = () => {
         Axios({
-            method: "GET",
+            method: "POST",
             url: "http://localhost:5000/mysqlReadTitleTable",
             headers: {
                 "Content-Type": "application/json"
-            }
+            },
+             data: { searchId }
         }).then(res => {
+            console.log("oui le serveur recupere l'id");
             console.log(res.data.message);
             console.log("mon tableau mysql", res.data.data);
             arrayMysql = res.data.data;
@@ -69,11 +77,24 @@ const Upload = () => {
 
     // first callback
     const firtCall = (arrayMysql) => {
-        console.log("mon tableau est", arrayMysql);
-        const arrayIdSpotify = arrayMysql.map(item => Object.values(item[10]).join(''));
-        console.log('mon id spotify est', arrayIdSpotify);
+        // recupération de l'idspotify via l'url spotify
+        console.log(arrayMysql);
+        const arrayLinkIdSpotify = arrayMysql.map(item => Object.values(item[10]).join('').split("track"));
+        const numbArrayLinkIdSpotify = arrayLinkIdSpotify.length - 1;
+        for (var i = 0; i <= numbArrayLinkIdSpotify; i++) {
+            arrayLinkIdSpotify[i].splice(0, 1);
+            console.log(arrayLinkIdSpotify);
+        }
+        arrayIdSpotify.push(arrayLinkIdSpotify);
+        console.log(arrayIdSpotify);
+        const idSpotify = arrayIdSpotify[0].map(id =>
+            Object.values(id[0]).join("")
+        );
+        console.log(idSpotify);
+        const idSpotifyFinal = idSpotify.map(idSpot => idSpot.slice(1, 23));
+        console.log(idSpotifyFinal);
 
-        arrayIdSpotify.forEach((id) => {
+        idSpotifyFinal.forEach((id) => {
             const FetchData = async () => {
                 const token = await getToken();
                 const data = await getApiData(token, id, arrayMysql);
@@ -124,7 +145,7 @@ const Upload = () => {
         setTimeout(() => {
             console.log('execution fetchdataArtist');
             FetchDataArtist();
-        }, 2000);
+        }, 4000);
 
 
     }
@@ -172,6 +193,7 @@ const Upload = () => {
         const arrayTitleFinal = arrayTitle[0].map(title =>title);
         setarrayTitle(arrayTitleFinal);
         console.log("mon tableau à mettre à jour dans googlesheet", arrayTitleFinal);
+       
         Axios.post('http://localhost:5000/', {
             data: arrayTitleFinal
         })
@@ -184,21 +206,24 @@ const Upload = () => {
             });
     }
 
-    const handleUploadTitleAndMedia= () => {
+    const handleUploadTitleAndMedia= (e) => {
+        e.preventDefault();
         setLoading(true);
-        handleFileMysql();
+        handleFileMysql(e);
         setTimeout(() => {
             handleSubmitGoogleSheetTitle();
-        }, 7000);
+        }, 
+        10000);
     }
     //---------------------------------------------------------MEDIA PART-----------------------------------------------------
     const handleFileMysqlMedia = () => {
         Axios({
-            method: "GET",
+            method: "POST",
             url: "http://localhost:5000/mysqlReadMediaTable",
             headers: {
                 "Content-Type": "application/json"
-            }
+            },
+            data:{searchId}
         }).then(res => {
             console.log("mon tableau mysql media est", res.data.data);
             arrayMysqlMedia = res.data.data;
@@ -346,7 +371,7 @@ const Upload = () => {
             //  arrayMediaComplete[i].splice(5, 1);
                 arrayMediaComplete[i].splice(6, 1);
             // arrayMediaComplete[0][i].splice(15, 1);
-                console.log(arrayMediaComplete);
+                // console.log(arrayMediaComplete);
             }
            
             console.log("mon tableau a envoyé dans googlesheet", arrayMediaComplete);
@@ -367,17 +392,33 @@ const Upload = () => {
         });
 }
 
+  
     return (
         <div id="upload">
             <div id="upload-container">
-                <div id="upload-containerTitle">
-                    <button id="upload-button" onClick={handleUploadTitleAndMedia}>Mettre à jour les titres et les médias</button>
+                <div id="upload-containerIDButton">
+                    <div id="upload-boxId">
+                        <form>
+                            <label id="search-label" >
+                                <input
+                                    type="text"
+                                    id="upload-inputId"
+                                    placeholder="Id extranet à renseigner..."
+                                    onChange={handleChange}
+                                />
+                            </label>
+                            <div id="upload-containerTitle">
+                                <button id="upload-button" type="submit" onClick={handleUploadTitleAndMedia}>Mettre à jour les titres et les médias</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
 
             {loading ?
             <div id= "upload-containerLoader">
-                    <Loader active inline='centered' />
+                    <Loader id="upload-loader" active inline='centered' />
+                    <p id= "upload-paragraph">Mise à jour en cour ... </p>
             </div>
                 : null}
                 { uploadDoc ? 

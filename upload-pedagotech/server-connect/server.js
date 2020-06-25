@@ -9,10 +9,11 @@ const queryString = require('query-string');
 require('dotenv').config()
 var mysql = require('mysql');
 app.use(cors());
-app.use(express.json()) // for parsing application/json
+app.use(express.json()) // for parsing application/json;
 app.use(express.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
 app.listen(port, () => console.log("Backend server live on " + port));
 
+let dataId;
 
 
 //Google API
@@ -66,7 +67,6 @@ app.post('/media', (req, res) => {
             body: { values: data },
             query: { valueInputOption: 'RAW' }
         }).then(() => {
-            // setTimeout(() => {
             console.log('mon tableau coté serveur est', data);
             const responseObj = {
                 statutCode: 200,
@@ -75,7 +75,6 @@ app.post('/media', (req, res) => {
             }
             res.send(responseObj);
             console.log('Saved!')
-            // }, 1300);
         }).catch((error) => {
             console.log('NOOON', error);
         })
@@ -108,27 +107,30 @@ app.get("/", (req, res) => {
 
 // mysql Title
 
-app.get("/mysqlReadTitleTable", (req, res) => {
+app.post("/mysqlReadTitleTable", (req, res) => {
+    dataId = req.body;
+    console.log("MON ID est", dataId);
+    const idExtra = Object.values(dataId).toString();
+    console.log(idExtra);
+
     //mysql connection 
     console.log('connection à la route mysql');
-   
-
     console.log('Get connection ...');
-
     var mySqlClient = mysql.createConnection({
         database: 'testextranet',
         host: "localhost",
         user: "root",
-        password: "XXXXXX"
+        password: "XXXX"
     });
 
     mySqlClient.connect(function (err) {
         if (err) throw err;
         console.log("Connected!");
     });
+
     // query to read title table in bdd 
     const getDomain = async () => {
-        const result = await dbQuery('SELECT * FROM MediaPedagogique WHERE idspotify IS NOT NULL');
+        const result = await dbQuery(`SELECT * FROM MediaPedagogique WHERE linkIdSpotify IS NOT NULL AND mediaPedagogique.id > ${idExtra}`);
         return result;
     }
 
@@ -149,7 +151,6 @@ app.get("/mysqlReadTitleTable", (req, res) => {
                         const arrayExtranet = result.map(objectifyRawPacket => Object.values(objectifyRawPacket));
                         console.log(arrayExtranet);
                         data(arrayExtranet);
-                        // res.send('tableau extranet enregistré', arrayExtranet);
                         res.send({
                             message: 'tableau extranet enregistré',
                             data: arrayExtranet
@@ -168,27 +169,33 @@ app.get("/mysqlReadTitleTable", (req, res) => {
 });
 
 //mysql media
-app.get("/mysqlReadMediaTable", (req, res) => {
+app.post("/mysqlReadMediaTable", (req, res) => {
     //mysql connection 
     console.log('connection à la route mysql');
 
     console.log('Get connection ...');
+    console.log('demande reçu !', req.body.data)
 
+    
     var mySqlClient = mysql.createConnection({
         database: 'testextranet',
         host: "localhost",
         user: "root",
-        password: "XXXX"
+        password: "XXX"
     });
 
     mySqlClient.connect(function (err) {
         if (err) throw err;
         console.log("Connected!");
     });
+    dataId = req.body;
+    console.log("MON ID est", dataId);
+    const idExtra = Object.values(dataId).toString();
+    console.log(idExtra);
     // query to read title table in bdd 
     const getDomain = async () => {
         const result = await dbQuery(
-            'SELECT FichierPedagogique.id,nomfichier,nom, niveau_id,Activite.nomActivite,typeFichier_id,professeur_id,mediaPedagogique_id, MediaPedagogique.idspotify FROM FichierPedagogique LEFT JOIN MediaPedagogique ON mediaPedagogique_id = MediaPedagogique.id LEFT JOIN fichierpedagogique_activite ON  FichierPedagogique.id = fichierpedagogique_id LEFT JOIN Activite ON fichierpedagogique_activite.activite_id = Activite.id WHERE mediaPedagogique_id is not NULL AND idspotify is not NULL AND niveau_id is not NULL');
+            `SELECT FichierPedagogique.id,nomfichier,nom, niveau_id,Activite.nomActivite,typeFichier_id,professeur_id,mediaPedagogique_id, MediaPedagogique.linkIdSpotify FROM FichierPedagogique LEFT JOIN MediaPedagogique ON mediaPedagogique_id = MediaPedagogique.id LEFT JOIN fichierpedagogique_activite ON  FichierPedagogique.id = fichierpedagogique_id LEFT JOIN Activite ON fichierpedagogique_activite.activite_id = Activite.id WHERE mediaPedagogique_id is not NULL AND linkIdSpotify is not NULL AND niveau_id is not NULL AND mediaPedagogique.id > ${idExtra}`);
         return result;
     }
 
@@ -207,7 +214,7 @@ app.get("/mysqlReadMediaTable", (req, res) => {
                         const objectifyRawPacket = row => ({ ...row });
                         // iterate over all items and convert the raw packet row -> js object
                         const arrayExtranetMedia = result.map(objectifyRawPacket => Object.values(objectifyRawPacket));
-                        console.log(result);
+                        // console.log(result);
                         data(arrayExtranetMedia);
                         res.send({
                             message: 'tableau media enregistré',

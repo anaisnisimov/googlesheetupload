@@ -14,10 +14,10 @@
     }
    
     &-button {
-        width: 40%;
+        width: 100%;
         border: none;
         margin:2em 2em 2em 0em;
-        padding: 1em;
+        padding: 1.3em;
         text-align: center;
         text-transform: uppercase;
         background-color: #EFF3F3;
@@ -73,5 +73,41 @@
         width: 100%;
         text-align: center;
     }
-   
+    &-containerIDButton{
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+    &-choiceId{
+       display: flex;
+       justify-content: center;
+      background-color: red;
+    }
+   &-boxId{
+       display: flex;
+       width: 20%;
+       justify-content: center;
+      
+   }
+    &-inputId{
+        width: 80%;
+        border: 0.5px solid #edebe4;
+        padding: 1em;
+        margin:2em;
+        text-align: left;
+        background-color:#eff3f3; 
+   }
+   &-inputId, &-input:focus {
+        cursor: text;
+        background-color:#e7e9e9; 
+        border: 0.5px solid #dadddd;
+        outline: none;
+
+    }
+    &-loader {
+        margin-bottom: 2em;
+    }
+    &-paragraph{
+        margin:2em;
+    }
 }
